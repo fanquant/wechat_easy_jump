@@ -12,7 +12,7 @@ from PIL import Image
 
 
 def is_around(_x, _y, _fix):
-    return _x-_fix <= _y <= _x+_fix
+    return _x - _fix <= _y <= _x + _fix
 
 
 def is_pix_around(_p1, _p2, _fix):
@@ -23,12 +23,12 @@ def is_pix_around(_p1, _p2, _fix):
 
 
 def diff_pix(_p1, _p2):
-    return "p1:%d, p2:%d, p3:%d" % ((_p1[0]-_p2[0]), (_p1[1]-_p2[1]), (_p1[2]-_p2[2]))
+    return "c1:%d, c2:%d, c3:%d" % ((_p1[0] - _p2[0]), (_p1[1] - _p2[1]), (_p1[2] - _p2[2]))
 
 
 def draw_around(img_pix, x, y, step=5, color=(255, 0, 0)):
-    for px in range(x-step, x+step+1):
-        for py in range(y - step, y + step):
+    for px in range(x - step, x + step + 1):
+        for py in range(y - step, y + step + 1):
             if px > 0 and py > 0:
                 img_pix[px, py] = color
     return img_pix
@@ -36,9 +36,9 @@ def draw_around(img_pix, x, y, step=5, color=(255, 0, 0)):
 
 def head_judge(pix, color_fix):
     return is_pix_around(pix, (72, 59, 94, 255), color_fix) or \
-            is_pix_around(pix, (120, 109, 154, 255), color_fix) or \
-            is_pix_around(pix, (81, 76, 119, 255), color_fix) or \
-            is_pix_around(pix, (56, 54, 70), color_fix)
+           is_pix_around(pix, (120, 109, 154, 255), color_fix) or \
+           is_pix_around(pix, (81, 76, 119, 255), color_fix) or \
+           is_pix_around(pix, (56, 54, 70), color_fix)
 
 
 def get_pos(_img, _img_des_path):
@@ -82,7 +82,7 @@ def get_pos(_img, _img_des_path):
             rect_top_list = []
 
     if len(rect_top_list) > 0:
-        mid = rect_top_list[int(math.ceil(len(rect_top_list)/2))]
+        mid = rect_top_list[int(math.ceil(len(rect_top_list) / 2))]
         # print("rect mid pos x: %d, y: %d, color:%s" % (mid[0], mid[1], str(img_pixel[mid[0], mid[1]])))
         start_x = mid[0]
         start_y = mid[1]
@@ -90,7 +90,7 @@ def get_pos(_img, _img_des_path):
 
     # print("rect_top_list:" + str(rect_top_list)+"\n")
     print("start=>x:%d, y:%d" % (start_x, start_y))
-    print("rect_pix: "+str(rect_pix))
+    print("rect_pix: " + str(rect_pix))
 
     _tpx = _tpy = 0
     for y in range(start_y, img_height):
@@ -158,7 +158,7 @@ def get_pos(_img, _img_des_path):
     print("max_ry_left:%d, max_ry_right:%d" % (max_ry_left, max_ry_right))
 
     _next_x = start_x
-    _next_y = max(max_ry_left, max_ry_right)
+    _next_y = t_y = max(max_ry_left, max_ry_right)
 
     max_y = 0
     min_y = start_y
@@ -171,14 +171,14 @@ def get_pos(_img, _img_des_path):
         min_y_list_size = 15
         while True:
             pre_y = start_y
-            # print("color_fix: "+str(color_fix))
+            print("color_fix: "+str(color_fix))
             for y in range(start_y, img_height, pix_step):
                 pix = img_pixel[start_x, y]
                 if is_pix_around(pix, rect_pix, color_fix):
-                    # print("#->x:%d, y:%d" % (start_x, y))
-                    # print("p:%s, diff:%s" % (str(img_pixel[start_x, y]), str(diff_pix(pix, rect_pix))))
+                    print("#->x:%d, y:%d" % (start_x, y))
+                    print("p:%s, diff:%s" % (str(img_pixel[start_x, y]), str(diff_pix(pix, rect_pix))))
                     y_list.append(y)
-                    # print("y-pre_y=%d-%d=%d" % (y, pre_y, (y-pre_y)))
+                    print("y-pre_y=%d-%d=%d" % (y, pre_y, (y-pre_y)))
                     if y - pre_y > pix_step * 5:
                         break
                     max_y = y if y > max_y else max_y
@@ -190,14 +190,14 @@ def get_pos(_img, _img_des_path):
                     break
                 max_y = 0
                 min_y = start_y
-                # print("~"*50)
+                print("~"*50)
             else:
                 break
         max_y = min_y + 230 if max_y - min_y > 230 else max_y
         print("min_y:%d, max_y:%d" % (min_y, max_y))
 
         _next_x = start_x
-        _next_y = int(math.ceil((min_y + max_y) / 2))
+        _next_y = t_y if max_y - min_y > 190 else int(math.ceil((min_y + max_y) / 2))
 
     print()
     print(" pos_x : %d,  pos_y : %d" % (_tpx, _tpy))
@@ -220,14 +220,14 @@ def get_pos(_img, _img_des_path):
 
     _img.save(_img_des_path, 'PNG')
     _img.close()
-    
+
     return _tpx, _tpy, _next_x, _next_y
     # return 0, 0, 0, 0
 
 
 if __name__ == "__main__":
 
-    debug = True  # False
+    debug = True
     data_dir_name = "test_data" if debug else "data"
     base_path = "D:\\dev_lenovo\\python_tool\\" + data_dir_name + "\\"
     # base_path = "D:\\myjump\\" + data_dir_name + "\\"
@@ -242,7 +242,7 @@ if __name__ == "__main__":
         size = len(img_file_list)
         for img_index in range(size):
             img_name = img_file_list[img_index]
-            print("%d/%d, img:%s" % ((img_index+1), size, img_name))
+            print("%d/%d, img:%s" % ((img_index + 1), size, img_name))
             img = Image.open(img_src_dir_path + os.sep + img_name)
             img_des_path = img_des_dir_path + os.sep + img_name
             get_pos(img, img_des_path)
@@ -280,17 +280,17 @@ if __name__ == "__main__":
             cmd = adb_path + " shell input swipe {x1} {y1} {x2} {y2} {duration}".format(
                 x1=tpx,
                 y1=tpy,
-                x2=tpx+1,
-                y2=tpy+1,
+                x2=tpx + 1,
+                y2=tpy + 1,
                 duration=duration
             )
             # print(cmd)
             subprocess.call(cmd, shell=True)
 
             print("*" * 50)
-            t = int((5000 + int(math.ceil(5000*random.random())))/1000)
-            print("sleep "+str(t)+"s")
+            t = int((5000 + int(math.ceil(5000 * random.random()))) / 1000)
+            print("sleep " + str(t) + "s")
             time.sleep(t)
-            print("*"*50)
+            print("*" * 50)
 
         print("Finish!")
