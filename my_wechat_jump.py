@@ -68,7 +68,6 @@ def get_pos(_img, _img_des_path):
         for x in range(img_width):
             pix = img_pixel[x, y]
             # 要排除棋子比方块高的情况
-            # 52, 53, 61
             if not head_judge(pix, color_fix):
                 if not rect_pix and not is_pix_around(pix, bak_pix, color_fix):
                     # print("x:%s, y:%s, pix:%s" % (str(x), str(y), str(img_pixel[x, y])))
@@ -94,8 +93,8 @@ def get_pos(_img, _img_des_path):
     print("rect_pix: "+str(rect_pix))
 
     _tpx = _tpy = 0
-    for x in range(img_width):
-        for y in range(start_y, img_height):
+    for y in range(start_y, img_height):
+        for x in range(img_width):
             pixel = img_pixel[x, y]
             if (50 < pixel[0] < 60) and (53 < pixel[1] < 63) and (95 < pixel[2] < 110):
                 _tpx = x
@@ -191,7 +190,7 @@ def get_pos(_img, _img_des_path):
                     break
                 max_y = 0
                 min_y = start_y
-                print("~"*50)
+                # print("~"*50)
             else:
                 break
         max_y = min_y + 230 if max_y - min_y > 230 else max_y
@@ -228,7 +227,7 @@ def get_pos(_img, _img_des_path):
 
 if __name__ == "__main__":
 
-    debug = False
+    debug = True  # False
     data_dir_name = "test_data" if debug else "data"
     base_path = "D:\\dev_lenovo\\python_tool\\" + data_dir_name + "\\"
     # base_path = "D:\\myjump\\" + data_dir_name + "\\"
@@ -275,7 +274,7 @@ if __name__ == "__main__":
                 break
 
             dis = math.sqrt(math.pow(tpx - next_x, 2) + math.pow(tpx - next_x, 2))
-            dis_time_set = 1.1
+            dis_time_set = 1.14
             duration = int(math.ceil(dis * dis_time_set))
             print("距离：%.2f, 距离系数：%.2f, 按压时间：%d" % (dis, dis_time_set, duration))
             cmd = adb_path + " shell input swipe {x1} {y1} {x2} {y2} {duration}".format(
