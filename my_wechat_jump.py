@@ -43,15 +43,15 @@ def head_judge(pix, color_fix):
 
 def get_pos(_img, _img_des_path):
     mini_start_line_size = 25
-    min_diff_y = 30
+    min_diff_y = 20
 
     img_width, img_height = _img.size
     img_pixel = _img.load()
     # find character
-    print("img_height:%s, img_width:%s" % (str(img_height), str(img_width)))
+    # print("img_height:%s, img_width:%s" % (str(img_height), str(img_width)))
 
     bak_pix = img_pixel[0, 203]
-    print("bak_pix: " + str(bak_pix))
+    # print("bak_pix: " + str(bak_pix))
     if is_pix_around(bak_pix, (51, 49, 36), 20):
         _img.close()
         return -1, -1, -1, -1
@@ -93,6 +93,7 @@ def get_pos(_img, _img_des_path):
     print("rect_pix: " + str(rect_pix))
 
     _tpx = _tpy = 0
+    _tp_max_x = 0
     for y in range(start_y, img_height):
         for x in range(img_width):
             pixel = img_pixel[x, y]
@@ -101,26 +102,33 @@ def get_pos(_img, _img_des_path):
                 _tpy = y
                 break
         if _tpx > 0:
+            for x in range(img_width):
+                pixel = img_pixel[x, y]
+                if is_pix_around(pixel, (56, 56, 96, 255), 20):
+                    _tp_max_x = max(x, _tp_max_x)
+            _tp_min_x = _tp_max_x - 76 + 1
+            _tpx = int((_tp_min_x + _tp_max_x)/2)
+            # print("_tp_min_x:%d, _tp_max_x:%d tpx:%d" % (_tp_min_x, _tp_max_x, _tpx))
             break
 
     pix_path = list()
-    pix_step = 5
+    pix_step = 1
     rx = start_x
     ry = start_y
     max_rx = rx
-    max_ry_right = ry
     color_fix = 5
-    while start_y <= ry <= img_width:
-        while rx <= img_width:
+    max_ry_right = 0
+    while start_y <= ry <= img_width - 1:
+        while rx <= img_width - 1:
             pix = img_pixel[rx, ry]
             if not is_pix_around(pix, rect_pix, color_fix):
                 rx -= pix_step
                 break
             else:
-                pix_path.append((rx, ry))
+                if rx >= max_rx:
+                    pix_path.append((rx, ry))
+                    max_rx = rx
                 rx += pix_step
-                max_ry_right = ry if rx > max_rx else max_ry_right
-                max_rx = rx if rx > max_rx else max_rx
 
         if rx >= img_width:
             break
@@ -131,22 +139,33 @@ def get_pos(_img, _img_des_path):
         else:
             ry += pix_step
 
+    rys = []
+    pre = pix_path[len(pix_path)-1][0]
+    for pp in range(len(pix_path)-1, 0, -1):
+        px = pix_path[pp]
+        if px[0] == pre:
+            rys.append(px[1])
+        else:
+            break
+        pre = px[0]
+    if len(rys) > 0:
+        max_ry_right = int((max(rys) + min(rys)) / 2)
+
     rx = start_x
     ry = start_y
     min_rx = rx
-    max_ry_left = ry
-    while start_y <= ry <= img_width:
+    max_ry_left = 0
+    while start_y <= ry <= img_width - 1:
         while rx >= 0:
             pix = img_pixel[rx, ry]
             if not is_pix_around(pix, rect_pix, color_fix):
                 rx += pix_step
                 break
             else:
-                pix_path.append((rx, ry))
+                if rx <= min_rx:
+                    pix_path.append((rx, ry))
+                    min_rx = rx
                 rx -= pix_step
-                max_ry_left = ry if rx < min_rx else max_ry_left
-                min_rx = rx if rx < min_rx else min_rx
-
         if rx <= 0:
             break
         pix = img_pixel[rx, ry]
@@ -155,34 +174,52 @@ def get_pos(_img, _img_des_path):
         else:
             ry += pix_step
 
-    print("max_ry_left:%d, max_ry_right:%d" % (max_ry_left, max_ry_right))
+    rys = []
+    pre = pix_path[len(pix_path) - 1][0]
+    for pp in range(len(pix_path) - 1, 0, -1):
+        px = pix_path[pp]
+        if px[0] == pre:
+            rys.append(px[1])
+        else:
+            break
+        pre = px[0]
+    if len(rys) > 0:
+        max_ry_left = int((max(rys) + min(rys)) / 2)
+
+    # print("max_ry_left:%d, max_ry_right:%d" % (max_ry_left, max_ry_right))
 
     _next_x = start_x
     _next_y = t_y = max(max_ry_left, max_ry_right)
 
     max_y = 0
     min_y = start_y
-    print("_next_y-start_y=%d-%d=%d " % (_next_y, start_y, _next_y - start_y))
-    f_flag = (_next_y - start_y < min_diff_y)
+    print("border -> y:" + str(_next_y))
+    # print("_next_y-start_y=%d-%d=%d min_diff_y=%d" % (_next_y, start_y, _next_y - start_y, min_diff_y))
+    f_flag = (_next_y - start_y <= min_diff_y)
+
+    # 一定要用方法2的 魔方/唱片机
+    if is_pix_around(rect_pix, (107, 156, 248), 3) or is_pix_around(rect_pix, (168, 161, 154), 3):
+        f_flag = True
+
     if f_flag:
         pix_step = 10
         color_fix = 10
         y_list = list()
-        min_y_list_size = 15
+        min_y_list_size = 25
         while True:
-            pre_y = start_y
-            print("color_fix: "+str(color_fix))
+            _pre_y = start_y
+            # print("color_fix: "+str(color_fix))
             for y in range(start_y, img_height, pix_step):
                 pix = img_pixel[start_x, y]
                 if is_pix_around(pix, rect_pix, color_fix):
-                    print("#->x:%d, y:%d" % (start_x, y))
-                    print("p:%s, diff:%s" % (str(img_pixel[start_x, y]), str(diff_pix(pix, rect_pix))))
+                    # print("#->x:%d, y:%d" % (start_x, y))
+                    # print("p:%s, diff:%s" % (str(img_pixel[start_x, y]), str(diff_pix(pix, rect_pix))))
                     y_list.append(y)
-                    print("y-pre_y=%d-%d=%d" % (y, pre_y, (y-pre_y)))
-                    if y - pre_y > pix_step * 5:
+                    # print("y-pre_y=%d-%d=%d" % (y, pre_y, (y-pre_y)))
+                    if y - _pre_y > pix_step * 5:
                         break
                     max_y = y if y > max_y else max_y
-                    pre_y = y
+                    _pre_y = y
             if len(y_list) < min_y_list_size:
                 y_list = []
                 color_fix += 1
@@ -190,33 +227,42 @@ def get_pos(_img, _img_des_path):
                     break
                 max_y = 0
                 min_y = start_y
-                print("~"*50)
+                # print("~" * 50)
             else:
                 break
         max_y = min_y + 230 if max_y - min_y > 230 else max_y
-        print("min_y:%d, max_y:%d" % (min_y, max_y))
+        print("line   -> min_y:%d, max_y:%d" % (min_y, max_y))
 
         _next_x = start_x
-        _next_y = t_y if max_y - min_y > 190 else int(math.ceil((min_y + max_y) / 2))
+        _next_y = t_y if max_y - min_y > 250 else int(math.ceil((min_y + max_y) / 2))
 
-    print()
+        # WZC瓶子
+        if is_pix_around(rect_pix, (255, 255, 255, 255), 10):
+            f_flag = False
+            _next_y = t_y
+
+        # 音箱方块
+        if f_flag:
+            _next_y = int(math.ceil((start_y * 2 + 180) / 2)) if _next_y - min_y <= 25 else _next_y
+
     print(" pos_x : %d,  pos_y : %d" % (_tpx, _tpy))
     print("next_x : %d, next_y : %d" % (_next_x, _next_y))
 
+    # 标记
     draw_around(img_pixel, _tpx, _tpy, color=(255, 0, 0, 255))
     draw_around(img_pixel, _next_x, _next_y, color=(0, 255, 0, 255))
-    if not f_flag:
-        for item in pix_path:
-            draw_around(img_pixel, item[0], item[1], color=(0, 0, 255, 255))
-    else:
-        draw_around(img_pixel, start_x, max_y, color=(0, 153, 68, 255))
+    draw_around(img_pixel, start_x, max_y, color=(0, 255, 255, 255))
+    for item in pix_path:
+        # draw_around(img_pixel, item[0], item[1], step=0, color=(0, 0, 255, 255))
+        img_pixel[item[0], item[1]] = (0, 0, 255, 255)
     draw_around(img_pixel, start_x, start_y, color=(255, 255, 0, 255))
+    img_pixel[_tpx, _tpy] = (0, 0, 0, 255)
 
     # print("\n sth.")
-    # ttx = 682
-    # tty = 942
+    # ttx = 448
+    # tty = 820
     # p_pix = img_pixel[ttx, tty]
-    # print("(x:%d, y:%d):%s, diff:%s\n" % (ttx, tty, str(p_pix), str(diff_pix(p_pix, rect_pix))))
+    # print("###-> (x:%d, y:%d):%s, diff:%s\n" % (ttx, tty, str(p_pix), str(diff_pix(p_pix, rect_pix))))
 
     _img.save(_img_des_path, 'PNG')
     _img.close()
@@ -230,11 +276,11 @@ if __name__ == "__main__":
     debug = True
     data_dir_name = "test_data" if debug else "data"
     base_path = "D:\\dev_lenovo\\python_tool\\" + data_dir_name + "\\"
-    # base_path = "D:\\myjump\\" + data_dir_name + "\\"
+    base_path = "D:\\myjump\\" + data_dir_name + "\\"
     img_src_dir_path = base_path + "src"
     img_des_dir_path = base_path + "des"
     adb_path = "D:\\soft\\adb\\adb.exe"
-    # adb_path = "D:\\wejump\\platform-tools\\adb.exe"
+    adb_path = "D:\\wejump\\platform-tools\\adb.exe"
 
     if debug:
         print("base_path : " + base_path)
@@ -242,13 +288,16 @@ if __name__ == "__main__":
         size = len(img_file_list)
         for img_index in range(size):
             img_name = img_file_list[img_index]
-            print("%d/%d, img:%s" % ((img_index + 1), size, img_name))
+            print("%d/%d, %.2f, img:%s" % ((img_index + 1), size, float(img_index)/size*100, img_name))
             img = Image.open(img_src_dir_path + os.sep + img_name)
             img_des_path = img_des_dir_path + os.sep + img_name
             get_pos(img, img_des_path)
             print("-" * 50)
     else:
+        pre_x = -1
+        pre_y = -1
         while True:
+            print(time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()))
             img_name = "mx3_" + str(int(time.time())) + ".png"
             mx_img_path = "/sdcard/jump/" + img_name
             img_src_path = img_src_dir_path + os.sep + img_name
@@ -264,17 +313,19 @@ if __name__ == "__main__":
             cmd = adb_path + " shell \\rm " + mx_img_path
             # print(cmd)
             subprocess.call(cmd, shell=True)
+            print()
 
             img = Image.open(img_src_dir_path + os.sep + img_name)
 
             tpx, tpy, next_x, next_y = get_pos(img, img_des_path)
             if tpx < 0:
+                print("*" * 50)
                 print("Game Over!")
                 print("*" * 50)
                 break
 
             dis = math.sqrt(math.pow(tpx - next_x, 2) + math.pow(tpx - next_x, 2))
-            dis_time_set = 1.14
+            dis_time_set = 1.12
             duration = int(math.ceil(dis * dis_time_set))
             print("距离：%.2f, 距离系数：%.2f, 按压时间：%d" % (dis, dis_time_set, duration))
             cmd = adb_path + " shell input swipe {x1} {y1} {x2} {y2} {duration}".format(
@@ -293,4 +344,4 @@ if __name__ == "__main__":
             time.sleep(t)
             print("*" * 50)
 
-        print("Finish!")
+        # print("Finish!")
