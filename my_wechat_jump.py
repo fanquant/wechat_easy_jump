@@ -31,7 +31,6 @@ def draw_around(img_pix, x, y, step=5, color=(255, 0, 0)):
         for py in range(y - step, y + step + 1):
             if px > 0 and py > 0:
                 img_pix[px, py] = color
-    return img_pix
 
 
 def head_judge(pix, color_fix):
@@ -89,26 +88,25 @@ def get_pos(_img, _img_des_path):
         rect_pix = img_pixel[start_x, start_y]
 
     # print("rect_top_list:" + str(rect_top_list)+"\n")
-    print("start=>x:%d, y:%d" % (start_x, start_y))
-    print("rect_pix: " + str(rect_pix))
+    # print("start=>x:%d, y:%d" % (start_x, start_y))
+    # print("rect_pix: " + str(rect_pix))
 
     _tpx = _tpy = 0
-    _tp_max_x = 0
     for y in range(start_y, img_height):
         for x in range(img_width):
             pixel = img_pixel[x, y]
             if (50 < pixel[0] < 60) and (53 < pixel[1] < 63) and (95 < pixel[2] < 110):
                 _tpx = x
-                _tpy = y
+                _tpy = y + 2
                 break
         if _tpx > 0:
-            for x in range(img_width):
-                pixel = img_pixel[x, y]
-                if is_pix_around(pixel, (56, 56, 96, 255), 20):
-                    _tp_max_x = max(x, _tp_max_x)
-            _tp_min_x = _tp_max_x - 76 + 1
-            _tpx = int((_tp_min_x + _tp_max_x)/2)
-            # print("_tp_min_x:%d, _tp_max_x:%d tpx:%d" % (_tp_min_x, _tp_max_x, _tpx))
+            _tp_max_x = 0
+            for x in range(_tpx + 1, img_width):
+                pixel = img_pixel[x, _tpy]
+                if not is_pix_around(pixel, (56, 56, 96, 255), color_fix):
+                    _tp_max_x = x - 1
+                    break
+            _tpx = _tp_max_x - 37
             break
 
     pix_path = list()
@@ -139,6 +137,7 @@ def get_pos(_img, _img_des_path):
         else:
             ry += pix_step
 
+    # 获取方块最有边像素的y的中间值
     rys = []
     pre = pix_path[len(pix_path)-1][0]
     for pp in range(len(pix_path)-1, 0, -1):
@@ -193,7 +192,7 @@ def get_pos(_img, _img_des_path):
 
     max_y = 0
     min_y = start_y
-    print("border -> y:" + str(_next_y))
+    # print("border -> y:" + str(_next_y))
     # print("_next_y-start_y=%d-%d=%d min_diff_y=%d" % (_next_y, start_y, _next_y - start_y, min_diff_y))
     f_flag = (_next_y - start_y <= min_diff_y)
 
@@ -231,7 +230,7 @@ def get_pos(_img, _img_des_path):
             else:
                 break
         max_y = min_y + 230 if max_y - min_y > 230 else max_y
-        print("line   -> min_y:%d, max_y:%d" % (min_y, max_y))
+        # print("line   -> min_y:%d, max_y:%d" % (min_y, max_y))
 
         _next_x = start_x
         _next_y = t_y if max_y - min_y > 250 else int(math.ceil((min_y + max_y) / 2))
@@ -268,12 +267,11 @@ def get_pos(_img, _img_des_path):
     _img.close()
 
     return _tpx, _tpy, _next_x, _next_y
-    # return 0, 0, 0, 0
 
 
 if __name__ == "__main__":
 
-    debug = True
+    debug = not True
     data_dir_name = "test_data" if debug else "data"
     base_path = "D:\\dev_lenovo\\python_tool\\" + data_dir_name + "\\"
     base_path = "D:\\myjump\\" + data_dir_name + "\\"
@@ -286,34 +284,43 @@ if __name__ == "__main__":
         print("base_path : " + base_path)
         img_file_list = os.listdir(img_src_dir_path)
         size = len(img_file_list)
+        print("-" * 50)
         for img_index in range(size):
+            s_t = time.time()
             img_name = img_file_list[img_index]
-            print("%d/%d, %.2f, img:%s" % ((img_index + 1), size, float(img_index)/size*100, img_name))
+            print("%d/%d, %.2f%%, img:%s" % ((img_index + 1), size, float(img_index+1)/size*100, img_name))
+            print()
             img = Image.open(img_src_dir_path + os.sep + img_name)
             img_des_path = img_des_dir_path + os.sep + img_name
             get_pos(img, img_des_path)
+            s_t = time.time() - s_t
+            print()
+            print("time spend:%ds" % s_t)
             print("-" * 50)
     else:
-        pre_x = -1
-        pre_y = -1
+        step_counter = 0
+        print("*" * 50)
         while True:
-            print(time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()))
+            step_counter += 1
+            print("step no : %d" % step_counter)
+
+            print("datetime : " + time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()))
             img_name = "mx3_" + str(int(time.time())) + ".png"
             mx_img_path = "/sdcard/jump/" + img_name
             img_src_path = img_src_dir_path + os.sep + img_name
             img_des_path = img_des_dir_path + os.sep + img_name
 
-            print("img: " + img_name)
-            cmd = adb_path + " shell screencap -p " + mx_img_path
+            print("img : " + img_name)
+            cmd = adb_path + " shell screencap -p " + mx_img_path + " > null"
             # print(cmd)
             subprocess.call(cmd, shell=True)
-            cmd = adb_path + " pull " + mx_img_path + " " + img_src_dir_path
+            cmd = adb_path + " pull " + mx_img_path + " " + img_src_dir_path + " > null"
             # print(cmd)
             subprocess.call(cmd, shell=True)
-            cmd = adb_path + " shell \\rm " + mx_img_path
+            cmd = adb_path + " shell \\rm " + mx_img_path + " > null"
             # print(cmd)
             subprocess.call(cmd, shell=True)
-            print()
+            # print()
 
             img = Image.open(img_src_dir_path + os.sep + img_name)
 
@@ -327,7 +334,7 @@ if __name__ == "__main__":
             dis = math.sqrt(math.pow(tpx - next_x, 2) + math.pow(tpx - next_x, 2))
             dis_time_set = 1.12
             duration = int(math.ceil(dis * dis_time_set))
-            print("距离：%.2f, 距离系数：%.2f, 按压时间：%d" % (dis, dis_time_set, duration))
+            print("dis : %.2f, fix : %.2f, press time : %dms" % (dis, dis_time_set, duration))
             cmd = adb_path + " shell input swipe {x1} {y1} {x2} {y2} {duration}".format(
                 x1=tpx,
                 y1=tpy,
@@ -339,7 +346,7 @@ if __name__ == "__main__":
             subprocess.call(cmd, shell=True)
 
             print("*" * 50)
-            t = int((5000 + int(math.ceil(5000 * random.random()))) / 1000)
+            t = random.randint(5, 10)
             print("sleep " + str(t) + "s")
             time.sleep(t)
             print("*" * 50)
