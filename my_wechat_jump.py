@@ -37,7 +37,9 @@ def head_judge(pix, color_fix):
     return is_pix_around(pix, (72, 59, 94, 255), color_fix) or \
            is_pix_around(pix, (120, 109, 154, 255), color_fix) or \
            is_pix_around(pix, (81, 76, 119, 255), color_fix) or \
-           is_pix_around(pix, (56, 54, 70), color_fix)
+           is_pix_around(pix, (56, 54, 70), color_fix) or \
+           is_pix_around(pix, (200, 224, 222), color_fix) or \
+           is_pix_around(pix, (184, 204, 203), color_fix)
 
 
 def get_pos(_img, _img_des_path):
@@ -332,8 +334,12 @@ if __name__ == "__main__":
                 break
 
             dis = math.sqrt(math.pow(tpx - next_x, 2) + math.pow(tpx - next_x, 2))
-            dis_time_set = 1.12
-            duration = int(math.ceil(dis * dis_time_set))
+            dis_time_set = random.uniform(1.12, 1.16)
+            duration = int(dis * dis_time_set)
+            if duration < 120:
+                time.sleep(20)
+                continue
+
             print("dis : %.2f, fix : %.2f, press time : %dms" % (dis, dis_time_set, duration))
             cmd = adb_path + " shell input swipe {x1} {y1} {x2} {y2} {duration}".format(
                 x1=tpx,
@@ -346,7 +352,7 @@ if __name__ == "__main__":
             subprocess.call(cmd, shell=True)
 
             print("*" * 50)
-            t = random.randint(5, 10)
+            t = random.randint(5, 8)
             print("sleep " + str(t) + "s")
             time.sleep(t)
             print("*" * 50)
