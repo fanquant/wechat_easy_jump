@@ -276,11 +276,11 @@ if __name__ == "__main__":
     debug = not True
     data_dir_name = "test_data" if debug else "data"
     base_path = "D:\\dev_lenovo\\python_tool\\" + data_dir_name + "\\"
-    base_path = "D:\\myjump\\" + data_dir_name + "\\"
+    # base_path = "D:\\myjump\\" + data_dir_name + "\\"
     img_src_dir_path = base_path + "src"
     img_des_dir_path = base_path + "des"
     adb_path = "D:\\soft\\adb\\adb.exe"
-    adb_path = "D:\\wejump\\platform-tools\\adb.exe"
+    # adb_path = "D:\\wejump\\platform-tools\\adb.exe"
 
     if debug:
         print("base_path : " + base_path)
@@ -328,19 +328,29 @@ if __name__ == "__main__":
 
             tpx, tpy, next_x, next_y = get_pos(img, img_des_path)
             if tpx < 0:
+                # 再来一局
+                # adb shell input tap 540 1480
                 print("*" * 50)
                 print("Game Over!")
                 print("*" * 50)
-                break
+                replay = raw_input("再来一局?(Y/N):")
+                if replay.lower() == "y":
+                    cmd = adb_path + " shell input tap 540 1480"
+                    subprocess.call(cmd, shell=True)
+                    time.sleep(20)
+                    continue
+                else:
+                    break
 
             dis = math.sqrt(math.pow(tpx - next_x, 2) + math.pow(tpx - next_x, 2))
-            dis_time_set = random.uniform(1.12, 1.16)
+            dis_time_set = 1.1265
+            # random.uniform(1.12, 1.16)
             duration = int(dis * dis_time_set)
             if duration < 120:
                 time.sleep(20)
                 continue
 
-            print("dis : %.2f, fix : %.2f, press time : %dms" % (dis, dis_time_set, duration))
+            print("dis : %.2f, fix : %.3f, press time : %dms" % (dis, dis_time_set, duration))
             cmd = adb_path + " shell input swipe {x1} {y1} {x2} {y2} {duration}".format(
                 x1=tpx,
                 y1=tpy,
@@ -352,7 +362,7 @@ if __name__ == "__main__":
             subprocess.call(cmd, shell=True)
 
             print("*" * 50)
-            t = random.randint(5, 8)
+            t = random.randint(5, 10)
             print("sleep " + str(t) + "s")
             time.sleep(t)
             print("*" * 50)
