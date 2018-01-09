@@ -345,7 +345,7 @@ if __name__ == "__main__":
             dis = math.sqrt((tpx - next_x) ** 2 + (tpy - next_y) ** 2)
             # dis = abs(tpx - next_x)
             # dis = abs(tpy - next_y)
-            dis_time_set = 1.4
+            dis_time_set = 1.366
             # random.uniform(1.12, 1.16)
             duration = int(dis * dis_time_set)
             if duration < 120:
