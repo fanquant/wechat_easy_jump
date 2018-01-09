@@ -307,6 +307,8 @@ if __name__ == "__main__":
         print("*" * 50)
         while True:
             step_counter += 1
+            next_rest += 1
+
             print("step no : %d" % step_counter)
 
             print("datetime : " + time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()))
@@ -384,6 +386,5 @@ if __name__ == "__main__":
                 print("*" * 50)
 
             time.sleep(random.uniform(1, 2))
-            next_rest += 1
 
         # print("Finish!")
