@@ -3,6 +3,7 @@
 
 from __future__ import print_function
 
+import sys
 import os
 import math
 import time
@@ -139,7 +140,7 @@ def get_pos(_img, _img_des_path):
         else:
             ry += pix_step
 
-    # 获取方块最有边像素的y的中间值
+    # 获取方块最右边像素的y的中间值
     rys = []
     pre = pix_path[len(pix_path)-1][0]
     for pp in range(len(pix_path)-1, 0, -1):
@@ -301,6 +302,8 @@ if __name__ == "__main__":
             print("-" * 50)
     else:
         step_counter = 0
+        next_rest = 0
+        next_rest_step = random.randint(10, 20)
         print("*" * 50)
         while True:
             step_counter += 1
@@ -367,9 +370,20 @@ if __name__ == "__main__":
             subprocess.call(cmd, shell=True)
 
             print("*" * 50)
-            t = random.randint(5, 10)
-            print("sleep " + str(t) + "s")
-            time.sleep(t)
-            print("*" * 50)
+
+            if step_counter == next_rest_step:
+                t = random.randint(10, 60)
+                print("已经连续跳了 %d 下，休息 %ds" % (next_rest, t))
+                for j in range(t):
+                    sys.stdout.write('\r程序将在 {}s 后继续'.format(t - j))
+                    sys.stdout.flush()
+                    time.sleep(1)
+                next_rest = 0
+                next_rest_step = step_counter + random.randint(10, 20)
+                print()
+                print("*" * 50)
+
+            time.sleep(random.uniform(1, 2))
+            next_rest += 1
 
         # print("Finish!")
