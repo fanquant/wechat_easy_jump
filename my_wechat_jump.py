@@ -276,11 +276,11 @@ if __name__ == "__main__":
     debug = not True
     data_dir_name = "test_data" if debug else "data"
     base_path = "D:\\dev_lenovo\\python_tool\\" + data_dir_name + "\\"
-    base_path = "D:\\myjump\\" + data_dir_name + "\\"
+    # base_path = "D:\\myjump\\" + data_dir_name + "\\"
     img_src_dir_path = base_path + "src"
     img_des_dir_path = base_path + "des"
     adb_path = "D:\\soft\\adb\\adb.exe"
-    adb_path = "D:\\wejump\\platform-tools\\adb.exe"
+    # adb_path = "D:\\wejump\\platform-tools\\adb.exe"
 
     if debug:
         print("base_path : " + base_path)
@@ -342,8 +342,10 @@ if __name__ == "__main__":
                 else:
                     break
 
-            dis = math.sqrt(math.pow(tpx - next_x, 2) + math.pow(tpx - next_x, 2))
-            dis_time_set = random.uniform(1.125, 1.13)
+            dis = math.sqrt((tpx - next_x) ** 2 + (tpy - next_y) ** 2)
+            # dis = abs(tpx - next_x)
+            # dis = abs(tpy - next_y)
+            dis_time_set = 1.4
             # random.uniform(1.12, 1.16)
             duration = int(dis * dis_time_set)
             if duration < 120:
